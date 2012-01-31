@@ -4,7 +4,7 @@ from django.db.models.fields.files import FileField, ImageField, FieldFile, Imag
 
 from south.modelsinspector import add_introspection_rules
 
-from webdav_upload.storage import WebDAVStorage
+from django_webdav_storage.storage import WebDAVStorage
 
 import re
 import os
@@ -94,5 +94,5 @@ class WebDAVImageField(WebDAVMixin, ImageField):
     def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
         super(WebDAVImageField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
 
-add_introspection_rules([], ["^webdav_upload\.fields\.WebDAVFileField"])
-add_introspection_rules([], ["^webdav_upload\.fields\.WebDAVImageField"])
+add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVFileField"])
+add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVImageField"])

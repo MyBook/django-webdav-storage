@@ -9,7 +9,7 @@ from django.core.files.base import  ContentFile
 
 from django.test import TestCase
 from django.db import models
-from webdav_upload.fields import WebDAVFileField
+from django_webdav_storage.fields import WebDAVFileField
 
 class TestModel(models.Model):
     file = WebDAVFileField(upload_to='test')
