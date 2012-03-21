@@ -37,6 +37,7 @@ class WebDAVStorage(Storage):
         content.seek(0)
         conn.send(content.read())
         res = conn.getresponse()
+        conn.close()
         if res.status != 201:
             raise HTTPError(self._location + name, res.status, res.reason, res.msg, res.fp)
         return name
@@ -56,6 +57,7 @@ class WebDAVStorage(Storage):
             else:
                 break
         temp_file.seek(0)
+        conn.close()
         return temp_file
 
     def delete(self, name):
@@ -64,6 +66,7 @@ class WebDAVStorage(Storage):
         res = conn.getresponse()
         if res.status != 204:
             raise HTTPError(self._location + name, res.status, res.reason, res.msg, res.fp)
+        conn.close()
         return res
 
     def url(self, name):
