@@ -25,7 +25,7 @@ class SimpleTest(TestCase):
         t = TestModel.objects.all()[0]
         self.assertEqual(t.file.read(), 'hello world')
         self.assertEqual(t.file.size, '11', 'Size is not changed')
-        self.assertEqual(t.file.url, 'http://knigla.com/storage/test/'+f.name)
+        self.assertRegexpMatches(t.file.url, r'.*/storage/test/'+f.name)
         t.file.delete()
         self.assertFalse(t.file)
         t.delete()
