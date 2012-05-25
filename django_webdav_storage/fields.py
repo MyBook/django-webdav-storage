@@ -44,6 +44,7 @@ class WebDAVMixin(object):
             content_type = file._file.content_type
         else:
             try:
+                file._file.seek(0)
                 content_type = magic.from_buffer(file._file.read(1024), mime=True)
             except TypeError as e:
                 print e
