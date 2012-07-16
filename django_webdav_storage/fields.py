@@ -65,6 +65,9 @@ class WebDAVMixin(object):
 
         return os.path.join(self.upload_to, uuid_string[:2], uuid_string[2:4], '%s%s' % (uuid_string, ext))
 
+    def close():
+        self.file.close()
+
 #noinspection PyUnresolvedReferences
 class WebDAVFieldFileMixin(object):
     def save(self, name, content, save=True):
