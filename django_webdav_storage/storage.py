@@ -49,7 +49,7 @@ class WebDAVStorage(Storage):
         res = conn.getresponse()
         if res.status != 200:
             raise ValueError(res.reason)
-        temp_file = TemporaryFile()
+        temp_file = TemporaryFile(suffix='.dav')
         while True:
             chunk = res.read(32768)
             if chunk:
