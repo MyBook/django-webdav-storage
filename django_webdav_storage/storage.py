@@ -1,9 +1,12 @@
+from StringIO import StringIO
 from httplib import HTTPConnection
 from tempfile import TemporaryFile
 from urllib2 import HTTPError
 from urlparse import urlparse
 from django.conf import settings
 from django.core.files.storage import Storage
+from django_webdav_storage.fields import WebDAVFieldFile
+
 
 class WebDAVStorage(Storage):
     """
@@ -44,12 +47,15 @@ class WebDAVStorage(Storage):
 
     def _open(self, name, mode):
         assert (mode == 'rb'), 'DAV storage accepts only rb mode'
+        return WebDAVFieldFile(name, self, mode)
+
+    def _read(self, name):
         conn = self._get_connection()
         conn.request('GET', self._location + name)
         res = conn.getresponse()
         if res.status != 200:
             raise ValueError(res.reason)
-        temp_file = TemporaryFile(suffix='.dav')
+        temp_file = StringIO()
         while True:
             chunk = res.read(32768)
             if chunk:
