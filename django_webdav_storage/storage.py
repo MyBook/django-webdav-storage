@@ -45,9 +45,9 @@ class WebDAVStorage(Storage):
         return name
 
     def _open(self, name, mode):
-        from django_webdav_storage.fields import WebDAVFieldFile
+        from django_webdav_storage.fields import WebDAVFile
         assert (mode == 'rb'), 'DAV storage accepts only rb mode'
-        return WebDAVFieldFile(name, self, mode)
+        return WebDAVFile(name, self, mode)
 
     def _read(self, name):
         conn = self._get_connection()

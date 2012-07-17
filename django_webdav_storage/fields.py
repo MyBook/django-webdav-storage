@@ -1,7 +1,7 @@
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FileField, ImageField, FieldFile, ImageFieldFile
-
+from StringIO import StringIO
 from south.modelsinspector import add_introspection_rules
 
 from django_webdav_storage.storage import WebDAVStorage
@@ -66,15 +66,48 @@ class WebDAVMixin(object):
         return os.path.join(self.upload_to, uuid_string[:2], uuid_string[2:4], '%s%s' % (uuid_string, ext))
 
 #noinspection PyUnresolvedReferences
+class WebDAVFile(File):
+    def __init__(self, name, storage, mode):
+        self._name = name
+        self._storage = storage
+        self._mode = mode
+        self._is_dirty = False
+        self.file = StringIO()
+        self._is_read = False
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def size(self):
+        if not hasattr(self, '_size'):
+            self._size = self._storage.size(self._name)
+        return self._size
+
+    def read(self, num_bytes=None):
+        if not self._is_read:
+            self.file = self._storage._read(self._name)
+            self._is_read = True
+
+        return self.file.read(num_bytes)
+
+    def write(self, content):
+        if 'w' not in self._mode:
+            raise AttributeError("File was opened for read-only access.")
+        self.file = StringIO(content)
+        self._is_dirty = True
+        self._is_read = True
+
+    def close(self):
+        self.file.close()
+
 class WebDAVFieldFileMixin(object):
     def save(self, name, content, save=True):
         file = getattr(self.instance, self.field.attname)
         if not hasattr(file, '_file') or not file._file:
             file._file = ContentFile(content) if not hasattr(content, 'read') else content
         return super(WebDAVFieldFileMixin, self).save(name, content, save)
-
-    def close(self):
-        self.file.close()
 
 
 class WebDAVFieldFile(WebDAVFieldFileMixin, FieldFile):
@@ -87,7 +120,6 @@ class WebDAVImageFieldFile(WebDAVFieldFileMixin, ImageFieldFile):
 
 class WebDAVFileField(WebDAVMixin, FileField):
     attr_class = WebDAVFieldFile
-
     def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
         super(WebDAVFileField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
 
