@@ -5,7 +5,6 @@ from urllib2 import HTTPError
 from urlparse import urlparse
 from django.conf import settings
 from django.core.files.storage import Storage
-from django_webdav_storage.fields import WebDAVFieldFile
 
 
 class WebDAVStorage(Storage):
@@ -46,6 +45,7 @@ class WebDAVStorage(Storage):
         return name
 
     def _open(self, name, mode):
+        from django_webdav_storage.fields import WebDAVFieldFile
         assert (mode == 'rb'), 'DAV storage accepts only rb mode'
         return WebDAVFieldFile(name, self, mode)
 
