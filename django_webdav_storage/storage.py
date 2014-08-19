@@ -1,12 +1,13 @@
 from StringIO import StringIO
 from httplib import HTTPConnection
-from tempfile import TemporaryFile
 from urllib2 import HTTPError
 from urlparse import urlparse
 from django.conf import settings
 from django.core.files.storage import Storage
+from django.utils.deconstruct import deconstructible
 
 
+@deconstructible
 class WebDAVStorage(Storage):
     """
     WebDAV Storage class for Django pluggable storage system.
