@@ -129,7 +129,7 @@ class WebDAVFileField(WebDAVMixin, FileField):
 
     def deconstruct(self):
         name, path, args, kwargs = super(WebDAVFileField, self).deconstruct()
-        if not isinstance(self.storage, WebDAVStorage()):
+        if not isinstance(self.storage, WebDAVStorage):
             kwargs['storage'] = self.storage
         return name, path, args, kwargs
 
@@ -142,7 +142,7 @@ class WebDAVImageField(WebDAVMixin, ImageField):
 
     def deconstruct(self):
         name, path, args, kwargs = super(WebDAVImageField, self).deconstruct()
-        if not isinstance(self.storage, WebDAVStorage()):
+        if not isinstance(self.storage, WebDAVStorage):
             kwargs['storage'] = self.storage
         return name, path, args, kwargs
 
