@@ -2,7 +2,6 @@ from django.core.files.base import ContentFile, File
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FileField, ImageField, FieldFile, ImageFieldFile
 from StringIO import StringIO
-from south.modelsinspector import add_introspection_rules
 
 from django_webdav_storage.storage import WebDAVStorage
 
@@ -14,13 +13,15 @@ try:
     import mimetypes
     import uuid
 
-    mimetypes.add_type('application/epub+zip', '.epub') #Some extensions to make my code working
+    # Some extensions to make my code working
+    mimetypes.add_type('application/epub+zip', '.epub')
 except ImportError:
     magic = None
     mimetypes = None
     uuid = None
 
-#noinspection PyArgumentList,PyUnresolvedReferences
+
+# noinspection PyArgumentList,PyUnresolvedReferences
 class WebDAVMixin(object):
     random_filename = False
 
@@ -65,7 +66,8 @@ class WebDAVMixin(object):
 
         return os.path.join(self.upload_to, uuid_string[:2], uuid_string[2:4], '%s%s' % (uuid_string, ext))
 
-#noinspection PyUnresolvedReferences
+
+# noinspection PyUnresolvedReferences
 class WebDAVFile(File):
     def __init__(self, name, storage, mode):
         self._name = name
@@ -102,6 +104,7 @@ class WebDAVFile(File):
     def close(self):
         self.file.close()
 
+
 class WebDAVFieldFileMixin(object):
     def save(self, name, content, save=True):
         file = getattr(self.instance, self.field.attname)
@@ -120,8 +123,15 @@ class WebDAVImageFieldFile(WebDAVFieldFileMixin, ImageFieldFile):
 
 class WebDAVFileField(WebDAVMixin, FileField):
     attr_class = WebDAVFieldFile
+
     def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
         super(WebDAVFileField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(WebDAVFileField, self).deconstruct()
+        if not isinstance(self.storage, WebDAVStorage()):
+            kwargs['storage'] = self.storage
+        return name, path, args, kwargs
 
 
 class WebDAVImageField(WebDAVMixin, ImageField):
@@ -130,5 +140,17 @@ class WebDAVImageField(WebDAVMixin, ImageField):
     def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
         super(WebDAVImageField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
 
-add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVFileField"])
-add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVImageField"])
+    def deconstruct(self):
+        name, path, args, kwargs = super(WebDAVImageField, self).deconstruct()
+        if not isinstance(self.storage, WebDAVStorage()):
+            kwargs['storage'] = self.storage
+        return name, path, args, kwargs
+
+
+try:
+    from south.modelsinspector import add_introspection_rules
+
+    add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVFileField"])
+    add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVImageField"])
+except ImportError:
+    pass
