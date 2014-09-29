@@ -15,6 +15,7 @@ try:
     import uuid
 
     mimetypes.add_type('application/epub+zip', '.epub') #Some extensions to make my code working
+    mimetypes.add_type('application/x-fictionbook+xml', '.fb2')
 except ImportError:
     magic = None
     mimetypes = None
