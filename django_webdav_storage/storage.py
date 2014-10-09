@@ -7,10 +7,10 @@ from django.core.files.storage import Storage
 try:
     from django.utils.deconstruct import deconstructible
 except ImportError:
-    def deconstructible(func):
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs)
-        return wrapped
+    def deconstructible(*args, **kwargs):
+        def wrapped(klass):
+            return klass
+        return wrapped(*args, **kwargs)
 
 
 @deconstructible
