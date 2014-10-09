@@ -4,7 +4,13 @@ from urllib2 import HTTPError
 from urlparse import urlparse
 from django.conf import settings
 from django.core.files.storage import Storage
-from django.utils.deconstruct import deconstructible
+try:
+    from django.utils.deconstruct import deconstructible
+except ImportError:
+    def decontructibe(func):
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapped
 
 
 @deconstructible
