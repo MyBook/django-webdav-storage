@@ -26,12 +26,12 @@ except ImportError:
 class WebDAVMixin(object):
     random_filename = False
 
-    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
+    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), custom_magic_file=None, **kwargs):
         if kwargs.get('random_filename', False):
             if magic is None or uuid is None or mimetypes is None:
                 raise ImproperlyConfigured(
                     'You need to install magic, mimetypes and uuid module to use random_filename')
-            self.magic = magic.Magic()
+            self.custom_magic_file = custom_magic_file
             self.random_filename = True
             del kwargs['random_filename']
         super(WebDAVMixin, self).__init__(verbose_name=verbose_name, name=name, upload_to=upload_to, storage=storage, **kwargs)
@@ -42,12 +42,16 @@ class WebDAVMixin(object):
         uuid_string = unicode(uuid.uuid4())
         file = getattr(instance, self.attname)
 
-        if hasattr(file._file, 'content_type'):
+        if hasattr(file._file, 'content_type') and file._file.content_type != 'application/octet-stream':
             content_type = file._file.content_type
         else:
             try:
                 file._file.seek(0)
-                content_type = magic.from_buffer(file._file.read(1024), mime=True)
+                if self.custom_magic_file:
+                    content_type = magic.Magic(mime=True,
+                                               magic_file=self.custom_magic_file).from_buffer(file._file.read(1024))
+                else:
+                    content_type = magic.from_buffer(file._file.read(1024), mime=True)
             except TypeError as e:
                 print e
                 content_type = 'application/x-unknown'
