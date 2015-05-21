@@ -8,14 +8,23 @@ from django_webdav_storage.storage import WebDAVStorage
 import re
 import os
 
+VALID_CONTENT_TYPES = (
+    'application/epub+zip',
+    'application/x-fictionbook+xml',
+    'application/x-fb2',
+    'application/x-fb2+zip',
+)
+
 try:
     import magic
     import mimetypes
     import uuid
 
     # Some extensions to make my code working
-    mimetypes.add_type('application/epub+zip', '.epub') #Some extensions to make my code working
+    mimetypes.add_type('application/epub+zip', '.epub')
     mimetypes.add_type('application/x-fictionbook+xml', '.fb2')
+    mimetypes.add_type('application/x-fb2', '.fb2')
+    mimetypes.add_type('application/x-fb2+zip', '.fb2.zip')
 except ImportError:
     magic = None
     mimetypes = None
@@ -26,23 +35,27 @@ except ImportError:
 class WebDAVMixin(object):
     random_filename = False
 
-    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), custom_magic_file=None, **kwargs):
+    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(),
+                 custom_magic_file=None, **kwargs):
         if kwargs.get('random_filename', False):
             if magic is None or uuid is None or mimetypes is None:
                 raise ImproperlyConfigured(
                     'You need to install magic, mimetypes and uuid module to use random_filename')
             self.custom_magic_file = custom_magic_file
+            self.valid_content_types = VALID_CONTENT_TYPES
+            if kwargs.get('valid_content_types'):
+                self.valid_content_types = kwargs['valid_content_types']
             self.random_filename = True
             del kwargs['random_filename']
-        super(WebDAVMixin, self).__init__(verbose_name=verbose_name, name=name, upload_to=upload_to, storage=storage, **kwargs)
+        super(WebDAVMixin, self).__init__(verbose_name=verbose_name, name=name, upload_to=upload_to,
+                                          storage=storage, **kwargs)
 
     def generate_filename(self, instance, filename):
         if not self.random_filename:
             return super(WebDAVMixin, self).generate_filename(instance, filename)
         uuid_string = unicode(uuid.uuid4())
         file = getattr(instance, self.attname)
-
-        if hasattr(file._file, 'content_type') and file._file.content_type != 'application/octet-stream':
+        if hasattr(file._file, 'content_type') and file._file.content_type in self.valid_content_types:
             content_type = file._file.content_type
         else:
             try:
