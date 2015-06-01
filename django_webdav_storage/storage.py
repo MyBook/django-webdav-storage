@@ -1,6 +1,6 @@
 from StringIO import StringIO
 from httplib import HTTPConnection
-from urllib2 import HTTPError
+from urllib2 import HTTPError, quote
 from urlparse import urlparse
 from django.conf import settings
 from django.core.files.storage import Storage
@@ -30,6 +30,13 @@ class WebDAVStorage(Storage):
         conn = HTTPConnection(self._host)
         conn.set_debuglevel(0)
         return conn
+
+    def save(self, name, content):
+        """ Override for escape filename """
+        if name is None:
+            name = content.name
+
+        return super(WebDAVStorage, self).save(quote(name), content)
 
     def exists(self, name):
         conn = self._get_connection()
