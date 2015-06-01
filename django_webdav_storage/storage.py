@@ -31,23 +31,16 @@ class WebDAVStorage(Storage):
         conn.set_debuglevel(0)
         return conn
 
-    def save(self, name, content):
-        """ Override for escape filename """
-        if name is None:
-            name = content.name
-
-        return super(WebDAVStorage, self).save(quote(name), content)
-
     def exists(self, name):
         conn = self._get_connection()
-        conn.request('HEAD', self._location + name)
+        conn.request('HEAD', self._location + quote(name))
         is_exists = conn.getresponse().status == 200
         conn.close()
         return is_exists
 
     def _save(self, name, content):
         conn = self._get_connection()
-        conn.putrequest('PUT', self._location + name)
+        conn.putrequest('PUT', self._location + quote(name))
         conn.putheader('Content-Length', len(content))
         conn.endheaders()
         content.seek(0)
@@ -65,7 +58,7 @@ class WebDAVStorage(Storage):
 
     def _read(self, name):
         conn = self._get_connection()
-        conn.request('GET', self._location + name)
+        conn.request('GET', self._location + quote(name))
         res = conn.getresponse()
         if res.status != 200:
             raise ValueError(res.reason)
@@ -82,7 +75,7 @@ class WebDAVStorage(Storage):
 
     def delete(self, name):
         conn = self._get_connection()
-        conn.request('DELETE', self._location + name)
+        conn.request('DELETE', self._location + quote(name))
         res = conn.getresponse()
         if res.status != 204:
             raise HTTPError(self._location + name, res.status, res.reason, res.msg, res.fp)
@@ -90,11 +83,11 @@ class WebDAVStorage(Storage):
         return res
 
     def url(self, name):
-        return self._location + name
+        return self._location + quote(name)
 
     def size(self, name):
         conn = self._get_connection()
-        conn.request('HEAD', self._location + name)
+        conn.request('HEAD', self._location + quote(name))
         res = conn.getresponse()
         conn.close()
         if res.status != 200:
