@@ -1,9 +1,15 @@
 from django.core.files.base import ContentFile, File
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FileField, ImageField, FieldFile, ImageFieldFile
+from django.conf import settings
+from django.utils.module_loading import import_string
 from StringIO import StringIO
 
-from django_webdav_storage.storage import WebDAVStorage
+
+WEBDAV_STORAGE_CLASS = getattr(settings, 'WEBDAV_STORAGE_CLASS',
+                               'django_webdav_storage.storage.WebDAVStorage')
+WebDAVStorage = import_string(WEBDAV_STORAGE_CLASS)
+
 
 import re
 import os
@@ -172,3 +178,4 @@ try:
     add_introspection_rules([], ["^django_webdav_storage\.fields\.WebDAVImageField"])
 except ImportError:
     pass
+
