@@ -21,10 +21,12 @@ class WebDAVStorage(Storage):
     >>> s = WebDAVStorage()
     """
 
-    def __init__(self, location=settings.WEBDAV_STORAGE_LOCATION, base_url=settings.MEDIA_URL):
+    def __init__(self, location=settings.WEBDAV_STORAGE_LOCATION, base_url=settings.MEDIA_URL,
+                 public_url=settings.WEBDAV_PUBLIC_URL):
         self._location = location
         self._host = urlparse(location)[1]
         self._base_url = base_url
+        self.public_url = public_url
 
     def _get_connection(self):
         conn = HTTPConnection(self._host)
@@ -83,7 +85,10 @@ class WebDAVStorage(Storage):
         return res
 
     def url(self, name):
-        return self._location + quote(name)
+        return self.get_public_url(quote(name))
+
+    def get_public_url(self, name):
+        return self.public_url.rstrip('/') + '/' + name.lstrip('/')
 
     def size(self, name):
         conn = self._get_connection()
