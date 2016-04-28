@@ -3,7 +3,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FileField, ImageField, FieldFile, ImageFieldFile
 from StringIO import StringIO
 
-from django_webdav_storage.storage import WebDAVStorage
+from django_webdav_storage.storage import WebDAVStorage, default_webdav_storage
 
 import re
 import os
@@ -35,7 +35,7 @@ except ImportError:
 class WebDAVMixin(object):
     random_filename = False
 
-    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(),
+    def __init__(self, verbose_name=None, name=None, upload_to='', storage=default_webdav_storage,
                  custom_magic_file=None, **kwargs):
         if kwargs.get('random_filename', False):
             if magic is None or uuid is None or mimetypes is None:
@@ -142,7 +142,7 @@ class WebDAVImageFieldFile(WebDAVFieldFileMixin, ImageFieldFile):
 class WebDAVFileField(WebDAVMixin, FileField):
     attr_class = WebDAVFieldFile
 
-    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
+    def __init__(self, verbose_name=None, name=None, upload_to='', storage=default_webdav_storage, **kwargs):
         super(WebDAVFileField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
 
     def deconstruct(self):
@@ -155,7 +155,7 @@ class WebDAVFileField(WebDAVMixin, FileField):
 class WebDAVImageField(WebDAVMixin, ImageField):
     attr_class = WebDAVImageFieldFile
 
-    def __init__(self, verbose_name=None, name=None, upload_to='', storage=WebDAVStorage(), **kwargs):
+    def __init__(self, verbose_name=None, name=None, upload_to='', storage=default_webdav_storage, **kwargs):
         super(WebDAVImageField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
 
     def deconstruct(self):

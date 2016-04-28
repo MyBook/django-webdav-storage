@@ -3,7 +3,9 @@ from httplib import HTTPConnection
 from urllib2 import HTTPError, quote
 from urlparse import urlparse
 from django.conf import settings
-from django.core.files.storage import Storage
+from django.core.files.storage import Storage, get_storage_class
+from django.utils.functional import LazyObject
+
 try:
     from django.utils.deconstruct import deconstructible
 except ImportError:
@@ -98,3 +100,11 @@ class WebDAVStorage(Storage):
         if res.status != 200:
             raise HTTPError(self._location + name, res.status, res.reason, res.msg, res.fp)
         return res.getheader('Content-Length')
+
+
+class DefaultWebDAVStorage(LazyObject):
+    def _setup(self):
+        storage_class = getattr(settings, 'WEBDAV_STORAGE_CLASS', 'django_webdav_storage.storage.WebDAVStorage')
+        self._wrapped = get_storage_class(storage_class)()
+
+default_webdav_storage = DefaultWebDAVStorage()
