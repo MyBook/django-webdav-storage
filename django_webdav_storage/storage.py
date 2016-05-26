@@ -1,7 +1,9 @@
-from StringIO import StringIO
+import os.path
 from httplib import HTTPConnection
+from StringIO import StringIO
 from urllib2 import HTTPError, quote
 from urlparse import urlparse
+
 from django.conf import settings
 from django.core.files.storage import Storage, get_storage_class
 from django.utils.functional import LazyObject
@@ -37,7 +39,10 @@ class WebDAVStorage(Storage):
 
     def _request(self, conn, method, name):
         if hasattr(settings, 'WEBDAV_SLUGIFY_FILENAME_FUNC'):
-            name = settings.WEBDAV_SLUGIFY_FILENAME_FUNC(name)
+            path, fl = os.path.split(name)
+            filename, ext = os.path.splitext(fl)
+            filename = settings.WEBDAV_SLUGIFY_FILENAME_FUNC(filename)
+            name = os.path.join(path, filename + ext)
         if method == 'PUT':
             conn.putrequest(method, self._location + quote(name))
         else:
