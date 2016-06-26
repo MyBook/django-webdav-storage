@@ -66,7 +66,6 @@ class WebDAVMixin(object):
                 else:
                     content_type = magic.from_buffer(file._file.read(1024), mime=True)
             except TypeError as e:
-                print e
                 content_type = 'application/x-unknown'
 
         #Receiving all extensions and checking if file extension matches MIME Type
