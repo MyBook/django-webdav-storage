@@ -5,6 +5,8 @@ from urlparse import urlparse
 from django.conf import settings
 from django.core.files.storage import Storage, get_storage_class
 from django.utils.functional import LazyObject
+from django.utils.encoding import force_bytes
+
 
 try:
     from django.utils.deconstruct import deconstructible
@@ -35,16 +37,20 @@ class WebDAVStorage(Storage):
         conn.set_debuglevel(0)
         return conn
 
+    @staticmethod
+    def _get_name(name):
+        return quote(force_bytes(name))
+
     def exists(self, name):
         conn = self._get_connection()
-        conn.request('HEAD', self._location + quote(name))
+        conn.request('HEAD', self._location + self._get_name(name))
         is_exists = conn.getresponse().status == 200
         conn.close()
         return is_exists
 
     def _save(self, name, content):
         conn = self._get_connection()
-        conn.putrequest('PUT', self._location + quote(name))
+        conn.putrequest('PUT', self._location + self._get_name(name))
         conn.putheader('Content-Length', len(content))
         conn.endheaders()
         content.seek(0)
@@ -62,7 +68,7 @@ class WebDAVStorage(Storage):
 
     def _read(self, name):
         conn = self._get_connection()
-        conn.request('GET', self._location + quote(name))
+        conn.request('GET', self._location + self._get_name(name))
         res = conn.getresponse()
         if res.status != 200:
             raise ValueError(res.reason)
@@ -79,7 +85,7 @@ class WebDAVStorage(Storage):
 
     def delete(self, name):
         conn = self._get_connection()
-        conn.request('DELETE', self._location + quote(name))
+        conn.request('DELETE', self._location + self._get_name(name))
         res = conn.getresponse()
         if res.status != 204:
             raise HTTPError(self._location + name, res.status, res.reason, res.msg, res.fp)
@@ -94,7 +100,7 @@ class WebDAVStorage(Storage):
 
     def size(self, name):
         conn = self._get_connection()
-        conn.request('HEAD', self._location + quote(name))
+        conn.request('HEAD', self._location + self._get_name(name))
         res = conn.getresponse()
         conn.close()
         if res.status != 200:
