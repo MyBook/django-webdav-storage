@@ -13,6 +13,8 @@ VALID_CONTENT_TYPES = (
     'application/x-fictionbook+xml',
     'application/x-fb2',
     'application/x-fb2+zip',
+    'application/vnd.ms-word',  # docx
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'  # docx
 )
 
 try:
@@ -25,6 +27,8 @@ try:
     mimetypes.add_type('application/x-fictionbook+xml', '.fb2')
     mimetypes.add_type('application/x-fb2', '.fb2')
     mimetypes.add_type('application/x-fb2+zip', '.fb2.zip')
+    mimetypes.add_type('application/vnd.ms-word', '.docx')
+    mimetypes.add_type('application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.docx')
 except ImportError:
     magic = None
     mimetypes = None
